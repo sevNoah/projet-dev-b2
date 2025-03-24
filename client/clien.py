@@ -1,6 +1,7 @@
 import socket
 import pygame
 from Button import Button
+from Game import Game
 import time  # Importer la bibliothèque time
 
 # --- Configuration du serveur ---
@@ -18,10 +19,10 @@ pygame.joystick.init()
 screen = pygame.display.set_mode((1280, 720))
 clock = pygame.time.Clock()
 running = True
+game = Game()
 
 # --- Chargement des backgrounds ---
-bg1 = pygame.image.load("../src/street-fighter-japanese-signs-1280x720.png").convert()
-bg2 = pygame.image.load("../src/street_fighter_1.png").convert()
+bg1 = pygame.image.load("../src/background/street-fighter-japanese-signs-1280x720.png").convert()
 current_bg = bg1  # Arrière-plan par défaut
 
 # --- Vérification de la manette ---
@@ -44,15 +45,15 @@ def send_to_server(message):
 
 # --- Initialisation des boutons ---
 PLAY_BUTTON = Button(
-    image=pygame.image.load("../src/start_btn.png"),
+    image=pygame.image.load("../src/button/start_btn.png"),
     pos=(640, 300)
 )
 OPTIONS_BUTTON = Button(
-    image=pygame.image.load("../src/button_options.png"),
+    image=pygame.image.load("../src/button/button_options.png"),
     pos=(640, 450)
 )
 QUIT_BUTTON = Button(
-    image=pygame.image.load("../src/button_quit.png"),
+    image=pygame.image.load("../src/button/button_quit.png"),
     pos=(640, 600)
 )
 
@@ -113,7 +114,8 @@ while running:
 
                 # Exemple de comportement :
                 if button_list[selected_index] == PLAY_BUTTON:
-                    current_bg = bg2 if current_bg == bg1 else bg1
+                    game.run()
+                    #current_bg = bg2 if current_bg == bg1 else bg1
                 elif button_list[selected_index] == OPTIONS_BUTTON:
                     print("⚙️ Options ouvertes !")
                 elif button_list[selected_index] == QUIT_BUTTON:
