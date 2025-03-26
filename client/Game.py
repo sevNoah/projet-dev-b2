@@ -1,5 +1,6 @@
 import pygame
 from SpriteSheet import SpriteSheet
+from Animation import Animation
 
 class Game:
     def __init__(self):
@@ -15,44 +16,46 @@ class Game:
         # Créer l'objet SpriteSheet
         self.sprite_sheet = SpriteSheet(self.sprite)
 
-        # Créer la liste d'animation
-        self.animation_list = []
-        self.animation_steps = 4  # Nombre de frames dans l'animation
+        # Créer l'objet Animation
+        self.animation = Animation(self.sprite_sheet, 4, 0.1)
 
-        # Découper les frames de l'animation et les ajouter à la liste
-        for x in range(self.animation_steps):
-            self.animation_list.append(self.sprite_sheet.get_image(x, 46, 120, 3))
+        # Position du joueur 1
+        self.player_x = 50
+        self.player_y = 350  # Position fixe en Y
+        self.speed = 300  # Pixels par seconde
 
-        self.current_frame = 0  # Frame actuelle pour l'animation
+        # Initialiser la manette
+        pygame.joystick.init()
+        if pygame.joystick.get_count() > 0:
+            self.joystick = pygame.joystick.Joystick(0)
+            self.joystick.init()
+        else:
+            self.joystick = None
 
-        # Contrôler la vitesse de l'animation
-        self.frame_delay = 90 
-        self.last_frame_time = pygame.time.get_ticks() 
+    def handle_joystick_input(self, delta_time):
+        if self.joystick:
+            # Obtenir la valeur de l'axe horizontal (X)
+            axis_x = self.joystick.get_axis(0)  # Axe gauche-droite
 
-    def animate(self):
-        current_time = pygame.time.get_ticks()
+            # Seuil pour éviter les petites variations
+            deadzone = 0.2
+            if abs(axis_x) > deadzone:
+                self.player_x += axis_x * self.speed * delta_time
 
-        # Si le délai entre les frames est écoulé
-        if current_time - self.last_frame_time >= self.frame_delay:
-            # Positionner le sprite joueur 1
-            self.screen.blit(self.animation_list[self.current_frame], (50, 350))  # Centrer l'animation
-
-            # Passer à la frame suivante
-            self.current_frame = (self.current_frame + 1) % self.animation_steps  # Passer à la frame suivante, revenir à 0 si nécessaire
-
-            self.last_frame_time = current_time  # Mettre à jour l'heure du dernier changement de frame
+            # Limiter aux bords de l'écran
+            self.player_x = max(0, min(self.player_x, 1280 - 150))  # 150 = largeur du sprite
 
     def run(self):
         while self.running:
-            self.clock.tick(10)  
+            delta_time = self.clock.tick(60) / 1000  # Temps écoulé en secondes
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
 
+            self.handle_joystick_input(delta_time)
             self.screen.blit(self.bg2, (0, 0))
-
-            self.animate()
+            self.screen.blit(self.animation.animate(delta_time), (self.player_x, self.player_y))
 
             pygame.display.flip()
 
