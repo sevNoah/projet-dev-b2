@@ -10,16 +10,22 @@ class Game:
         self.clock = pygame.time.Clock() 
         self.bg2 = pygame.image.load("../src/background/street_fighter_2.png").convert()
         self.sprite = pygame.image.load("../src/sprites/sprite_1.png").convert_alpha()
-        
+        self.sprite_coupDePoint = pygame.image.load("../src/sprites/spritecombat_coupDePoint.png").convert_alpha()
+
         self.running = True
 
         # Créer l'objet SpriteSheet
         self.sprite_sheet = SpriteSheet(self.sprite)
+        self.punch_sprite_sheet = SpriteSheet(self.sprite_coupDePoint)
 
-        # Créer l'objet Animation
-        self.animation = Animation(self.sprite_sheet, 4, 0.1)
+        # Créer les objets Animation
+        self.idle_animation = Animation(self.sprite_sheet, 4, 0.1, 47)
+        self.punch_animation = Animation(self.punch_sprite_sheet, 2, 0.1, 69)
 
-        # Position du joueur 1
+        self.current_animation = self.idle_animation
+        self.is_punching = False
+
+        # Position du joueur
         self.player_x = 50
         self.player_y = 350  # Position fixe en Y
         self.speed = 300  # Pixels par seconde
@@ -42,8 +48,28 @@ class Game:
             if abs(axis_x) > deadzone:
                 self.player_x += axis_x * self.speed * delta_time
 
-            # Limiter aux bords de l'écran
+            # Limiter aux bords de l'\u00e9cran
             self.player_x = max(0, min(self.player_x, 1280 - 150))  # 150 = largeur du sprite
+
+            # Coup de poing avec carr\u00e9 (bouton 2)
+            if self.joystick.get_button(2):
+                if not self.is_punching or self.current_animation == self.idle_animation:
+                    self.current_animation = self.punch_animation
+                    self.current_animation.reset()
+                    self.is_punching = True
+
+            # Transition fluide vers l'animation idle après le coup de poing
+            if self.is_punching:
+                if self.current_animation.current_frame >= self.current_animation.animation_steps:
+                    if self.current_animation.animation_timer >= 0.2:
+                        self.is_punching = False
+                else:
+                    self.player_x += (axis_x * self.speed * 0.5) * delta_time  # Mouvement réduit pendant le punch
+
+            # Retour à l'animation idle si le coup de poing est terminé
+            if not self.is_punching:
+                self.current_animation = self.idle_animation
+
 
     def run(self):
         while self.running:
@@ -54,8 +80,17 @@ class Game:
                     self.running = False
 
             self.handle_joystick_input(delta_time)
+            
+            # Mise à jour de l'animation
+            frame = self.current_animation.animate(delta_time)
             self.screen.blit(self.bg2, (0, 0))
-            self.screen.blit(self.animation.animate(delta_time), (self.player_x, self.player_y))
+
+            if frame:
+                self.screen.blit(frame, (self.player_x, self.player_y))
+            else:
+                self.current_animation = self.idle_animation
+                self.current_animation.reset()
+                self.is_punching = False
 
             pygame.display.flip()
 
