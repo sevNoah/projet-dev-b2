@@ -21,6 +21,8 @@ class Game:
 
         # Chargement du sprite pour Ken
         self.sprite_person2 = pygame.image.load("../src/sprites/ken/sprite_idl.png").convert_alpha()
+        self.sprite_coup_ken = pygame.image.load("../src/sprites/ken/coup.png").convert_alpha()
+        self.sprite_coupDePied_ken = pygame.image.load("../src/sprites/ken/sprite_coup_de_pied_ken.png").convert_alpha()
 
         self.running = True
         self.fireballs = []  # 🔥 boules de feu de Ryu
@@ -34,14 +36,18 @@ class Game:
         self.boule_de_feu_sprite_sheet = SpriteSheet(self.sprite_boule_de_feu_img)
 
         self.sprite_sheet_ken = SpriteSheet(self.sprite_person2)
+        self.sprite_sheet_coup = SpriteSheet(self.sprite_coup_ken)
+        self.sprite_sheet_coupDePied = SpriteSheet(self.sprite_coupDePied_ken)
 
         # Animations
         self.idle_animation = Animation(self.sprite_sheet, 4, 0.15, 50, loop=True)  # Ryu idle
-        self.punch_animation = Animation(self.punch_sprite_sheet, 2, 0.1, 65, loop=False)
-        self.coup_de_pied_animation = Animation(self.coup_de_pied_sprite_sheet, 3, 0.1, 65, loop=False)
+        self.punch_animation = Animation(self.punch_sprite_sheet, 2, 0.15, 65, loop=False)
+        self.coup_de_pied_animation = Animation(self.coup_de_pied_sprite_sheet, 3, 0.15, 65, loop=False)
         self.cameamea_animation = Animation(self.cameamea_sprite_sheet, 2, 0.15, 70, loop=False)
 
-        self.idle_animation_ken = Animation(self.sprite_sheet_ken, 3, 0.15, 50, loop=True)
+        self.idle_animation_ken = Animation(self.sprite_sheet_ken, 4, 0.15, 60, loop=True)
+        self.coup_ken_animation = Animation(self.sprite_sheet_coup, 3, 0.15, 83, loop = False)
+        self.coupDePied_ken_animation = Animation(self.sprite_sheet_coupDePied, 3, 0.15, 83, loop= False)
 
         # Joueurs
         self.player1 = {
@@ -55,7 +61,7 @@ class Game:
 
         self.player2 = {
             "x": 900,
-            "y": 350,
+            "y": 300,
             "current_animation": self.idle_animation_ken,
             "is_punching": False,
             "is_cameamea": False,
@@ -113,6 +119,17 @@ class Game:
                     })
                     player["is_cameamea"] = False
                     player["current_animation"] = self.idle_animation
+            
+            if idx == 1:  
+                if joystick.get_button(1) and not player["is_coupDePied"] and not player["is_punching"] :
+                    player["current_animation"] = self.coupDePied_ken_animation
+                    player["current_animation"].reset()
+                    player["is_coupDePied"] = True
+                if joystick.get_button(2) and not player["is_punching"] and not player["is_coupDePied"] :
+                    player["current_animation"] = self.coup_ken_animation
+                    player["current_animation"].reset()
+                    player["is_punching"] = True
+
 
 
     def update_player(self, player, delta_time):
