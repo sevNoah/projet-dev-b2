@@ -116,7 +116,7 @@ while running:
             if button_list[selected_index] == PLAY_BUTTON:
                 game.run()
             elif button_list[selected_index] == OPTIONS_BUTTON:
-                options_menu = OptionsMenu(screen, game)  # Passer l'instance de Game à OptionsMenu
+                options_menu = OptionsMenu(screen)  # Appel du menu d'options
                 options_menu.run()
             elif button_list[selected_index] == QUIT_BUTTON:
                 running = False

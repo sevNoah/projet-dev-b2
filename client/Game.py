@@ -1,6 +1,7 @@
 import pygame
 from SpriteSheet import SpriteSheet
 from Animation import Animation
+from option import OptionsMenu  # Importation du module option
 
 class Game:
     def __init__(self):
@@ -74,6 +75,7 @@ class Game:
         self.kick_button = 1
         self.punch_button = 2
         self.hadouken_button = 3
+        self.options_button = 9  # Bouton Options sur la manette PS5
 
         # Initialiser les manettes
         pygame.joystick.init()
@@ -157,6 +159,12 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+
+            # Vérifier si le bouton d'options est pressé
+            for joystick in self.joysticks:
+                if joystick.get_button(self.options_button):
+                    options_menu = OptionsMenu(self.screen, self)
+                    options_menu.run()
 
             self.handle_joystick_input(delta_time)
 

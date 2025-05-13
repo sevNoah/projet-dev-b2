@@ -11,7 +11,8 @@ class OptionsMenu:
             {"name": "Sensibilité Axes", "value": 0.2, "min": 0.1, "max": 0.5, "step": 0.05, "type": "range"},
             {"name": "Bouton Coup de Pied", "value": 1, "type": "button"},
             {"name": "Bouton Coup de Poing", "value": 2, "type": "button"},
-            {"name": "Bouton Hadouken", "value": 3, "type": "button"}
+            {"name": "Bouton Hadouken", "value": 3, "type": "button"},
+            {"name": "Retour", "type": "return"}  # Nouvelle option pour revenir en arrière
         ]
         self.selected_option = 0
         self.waiting_for_input = False
@@ -68,6 +69,8 @@ class OptionsMenu:
                         if self.options[self.selected_option]["type"] == "button":
                             self.waiting_for_input = True
                             self.input_prompt = f"Appuyez sur une touche pour {self.options[self.selected_option]['name']}"
+                        elif self.options[self.selected_option]["type"] == "return":
+                            self.save_and_exit()
                         else:
                             self.save_and_exit()
             elif event.type == pygame.JOYAXISMOTION:
@@ -82,6 +85,8 @@ class OptionsMenu:
                         if self.options[self.selected_option]["type"] == "button":
                             self.waiting_for_input = True
                             self.input_prompt = f"Appuyez sur un bouton pour {self.options[self.selected_option]['name']}"
+                        elif self.options[self.selected_option]["type"] == "return":
+                            self.save_and_exit()
                         else:
                             self.save_and_exit()
                 elif self.waiting_for_input:
@@ -118,6 +123,8 @@ class OptionsMenu:
             if option["type"] == "button":
                 button_name = self.button_names.get(option["value"], "Unknown")
                 text = self.font.render(f"{option['name']}: {button_name}", True, color)
+            elif option["type"] == "return":
+                text = self.font.render(f"{option['name']}", True, color)
             else:
                 text = self.font.render(f"{option['name']}: {option['value']}", True, color)
             self.screen.blit(text, (self.screen.get_width() // 2 - text.get_width() // 2, 100 + i * 50))
