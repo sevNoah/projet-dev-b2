@@ -2,6 +2,8 @@ import pygame
 from SpriteSheet import SpriteSheet
 from Animation import Animation
 from option import OptionsMenu  # Importation du module option
+import json
+import os
 
 class Game:
     def __init__(self):
@@ -46,7 +48,7 @@ class Game:
         self.coup_de_pied_animation = Animation(self.coup_de_pied_sprite_sheet, 3, 0.15, 65, loop=False)
         self.cameamea_animation = Animation(self.cameamea_sprite_sheet, 2, 0.15, 70, loop=False)
 
-        self.idle_animation_ken = Animation(self.sprite_sheet_ken, 4, 0.15, 60, loop=True)
+        self.idle_animation_ken = Animation(self.sprite_sheet_ken, 4, 0.15, 60, loop=True)  # Correction : 4 - Animation -> 4
         self.coup_ken_animation = Animation(self.sprite_sheet_coup, 3, 0.15, 83, loop=False)
         self.coupDePied_ken_animation = Animation(self.sprite_sheet_coupDePied, 3, 0.15, 83, loop=False)
 
@@ -71,11 +73,23 @@ class Game:
 
         self.speed = 300
 
-        # Touches configurées
+        # Touches configurées (valeurs par défaut)
         self.kick_button = 1
         self.punch_button = 2
         self.hadouken_button = 3
         self.options_button = 9  # Bouton Options sur la manette PS5
+
+        # Charger les paramètres depuis settings.json si disponible
+        if os.path.exists("settings.json"):
+            try:
+                with open("settings.json", "r") as f:
+                    settings = json.load(f)
+                    self.kick_button = settings.get("kick_button", self.kick_button)
+                    self.punch_button = settings.get("punch_button", self.punch_button)
+                    self.hadouken_button = settings.get("hadouken_button", self.hadouken_button)
+                    self.speed = settings.get("axis_sensitivity", self.speed) * 1500  # Ajuster la vitesse selon la sensibilité
+            except Exception as e:
+                print(f"❌ Erreur de chargement des paramètres : {e}")
 
         # Initialiser les manettes
         pygame.joystick.init()
@@ -86,7 +100,7 @@ class Game:
             self.joysticks.append(joystick)
 
     def handle_joystick_input(self, delta_time):
-        for idx, joystick in enumerate(self.joysticks):  # Correction : joysicks -> joysticks
+        for idx, joystick in enumerate(self.joysticks):
             if idx == 0:
                 # 🎮 Manette 0 -> contrôle Ryu
                 player = self.player1

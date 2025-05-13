@@ -4,6 +4,7 @@ from Button import Button
 from Game import Game
 from option import OptionsMenu  # Importation du module option
 import time
+import os
 
 # --- Configuration du serveur ---
 HOST = "127.0.0.1"
@@ -116,9 +117,12 @@ while running:
             if button_list[selected_index] == PLAY_BUTTON:
                 game.run()
             elif button_list[selected_index] == OPTIONS_BUTTON:
-                options_menu = OptionsMenu(screen, game)  # Correction : passer game
+                options_menu = OptionsMenu(screen, game)
                 options_menu.run()
             elif button_list[selected_index] == QUIT_BUTTON:
+                # Supprimer le fichier de paramètres avant de quitter
+                if os.path.exists("settings.json"):
+                    os.remove("settings.json")
                 running = False
 
     # --- Animation des boutons ---

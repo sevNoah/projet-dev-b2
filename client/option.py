@@ -1,5 +1,7 @@
 import pygame
 import sys
+import json
+import os
 
 class OptionsMenu:
     def __init__(self, screen, game):
@@ -45,6 +47,20 @@ class OptionsMenu:
             joystick.init()
             self.joysticks.append(joystick)
 
+    def save_settings(self):
+        # Sauvegarder les paramètres dans settings.json
+        settings = {
+            "axis_sensitivity": self.options[0]["value"],
+            "kick_button": self.options[1]["value"],
+            "punch_button": self.options[2]["value"],
+            "hadouken_button": self.options[3]["value"]
+        }
+        try:
+            with open("settings.json", "w") as f:
+                json.dump(settings, f)
+        except Exception as e:
+            print(f"❌ Erreur de sauvegarde des paramètres : {e}")
+
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -57,6 +73,7 @@ class OptionsMenu:
                     else:
                         self.options[self.selected_option]["value"] = event.key
                         self.waiting_for_input = False
+                        self.update_game_buttons()  # Sauvegarder après changement
                 else:
                     if event.key == pygame.K_UP:
                         self.selected_option = (self.selected_option - 1) % len(self.options)
@@ -64,8 +81,10 @@ class OptionsMenu:
                         self.selected_option = (self.selected_option + 1) % len(self.options)
                     elif event.key == pygame.K_LEFT:
                         self.adjust_option(-1)
+                        self.save_settings()  # Sauvegarder après ajustement de sensibilité
                     elif event.key == pygame.K_RIGHT:
                         self.adjust_option(1)
+                        self.save_settings()  # Sauvegarder après ajustement de sensibilité
                     elif event.key == pygame.K_RETURN:
                         if self.options[self.selected_option]["type"] == "button":
                             self.waiting_for_input = True
@@ -73,6 +92,9 @@ class OptionsMenu:
                         elif self.options[self.selected_option]["type"] == "return":
                             self.save_and_exit()
                         elif self.options[self.selected_option]["type"] == "quit":
+                            # Supprimer le fichier de paramètres avant de quitter
+                            if os.path.exists("settings.json"):
+                                os.remove("settings.json")
                             pygame.quit()
                             sys.exit()
                         else:
@@ -92,6 +114,9 @@ class OptionsMenu:
                         elif self.options[self.selected_option]["type"] == "return":
                             self.save_and_exit()
                         elif self.options[self.selected_option]["type"] == "quit":
+                            # Supprimer le fichier de paramètres avant de quitter
+                            if os.path.exists("settings.json"):
+                                os.remove("settings.json")
                             pygame.quit()
                             sys.exit()
                         else:
@@ -99,7 +124,7 @@ class OptionsMenu:
                 elif self.waiting_for_input:
                     self.options[self.selected_option]["value"] = event.button
                     self.waiting_for_input = False
-                    self.update_game_buttons()
+                    self.update_game_buttons()  # Sauvegarder après changement
 
     def adjust_option(self, direction):
         option = self.options[self.selected_option]
@@ -115,6 +140,7 @@ class OptionsMenu:
                 self.game.punch_button = option["value"]
             elif option["name"] == "Hadouken Button":
                 self.game.hadouken_button = option["value"]
+        self.save_settings()  # Sauvegarder après mise à jour des boutons
 
     def save_and_exit(self):
         self.update_game_buttons()
