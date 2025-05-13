@@ -4,6 +4,7 @@ from Animation import Animation
 from option import OptionsMenu  # Importation du module option
 import json
 import os
+import time
 
 class Game:
     def __init__(self):
@@ -48,7 +49,7 @@ class Game:
         self.coup_de_pied_animation = Animation(self.coup_de_pied_sprite_sheet, 3, 0.15, 65, loop=False)
         self.cameamea_animation = Animation(self.cameamea_sprite_sheet, 2, 0.15, 70, loop=False)
 
-        self.idle_animation_ken = Animation(self.sprite_sheet_ken, 4, 0.15, 60, loop=True)  # Correction : 4 - Animation -> 4
+        self.idle_animation_ken = Animation(self.sprite_sheet_ken, 4, 0.15, 60, loop=True)
         self.coup_ken_animation = Animation(self.sprite_sheet_coup, 3, 0.15, 83, loop=False)
         self.coupDePied_ken_animation = Animation(self.sprite_sheet_coupDePied, 3, 0.15, 83, loop=False)
 
@@ -98,6 +99,10 @@ class Game:
             joystick = pygame.joystick.Joystick(i)
             joystick.init()
             self.joysticks.append(joystick)
+
+        # Délai pour le bouton Options
+        self.last_options_press = 0
+        self.options_delay = 0.5  # 500ms entre chaque activation
 
     def handle_joystick_input(self, delta_time):
         for idx, joystick in enumerate(self.joysticks):
@@ -173,12 +178,18 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                    return None
 
-            # Vérifier si le bouton d'options est pressé
+            # Vérifier si le bouton d'options est pressé avec un délai
+            current_time = time.time()
             for joystick in self.joysticks:
-                if joystick.get_button(self.options_button):
+                if joystick.get_button(self.options_button) and current_time - self.last_options_press > self.options_delay:
+                    self.last_options_press = current_time
                     options_menu = OptionsMenu(self.screen, self)
-                    options_menu.run()
+                    result = options_menu.run()
+                    if result == "return_to_menu":
+                        self.running = False
+                        return "return_to_menu"  # Retourner explicitement pour la page de démarrage
 
             self.handle_joystick_input(delta_time)
 
@@ -199,5 +210,4 @@ class Game:
 
             pygame.display.flip()
 
-        pygame.quit()
-        print("👋 Déconnexion du serveur.")
+        return None  # Retour par défaut si le jeu se termine autrement

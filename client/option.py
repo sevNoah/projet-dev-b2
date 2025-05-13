@@ -15,6 +15,7 @@ class OptionsMenu:
             {"name": "Punch Button", "value": 2, "type": "button"},
             {"name": "Hadouken Button", "value": 3, "type": "button"},
             {"name": "Return", "type": "return"},
+            {"name": "Return to Menu", "type": "return_to_menu"},
             {"name": "Quit", "type": "quit"}
         ]
         self.selected_option = 0
@@ -88,9 +89,13 @@ class OptionsMenu:
                     elif event.key == pygame.K_RETURN:
                         if self.options[self.selected_option]["type"] == "button":
                             self.waiting_for_input = True
-                            self.input_prompt = f"Press a key for {self.options[self.selected_option]['name']}"
+                            self.input_prompt = f"Press a button for {self.options[self.selected_option]['name']}"
                         elif self.options[self.selected_option]["type"] == "return":
                             self.save_and_exit()
+                            return None
+                        elif self.options[self.selected_option]["type"] == "return_to_menu":
+                            self.save_and_exit(return_to_menu=True)
+                            return "return_to_menu"
                         elif self.options[self.selected_option]["type"] == "quit":
                             # Supprimer le fichier de paramètres avant de quitter
                             if os.path.exists("settings.json"):
@@ -99,6 +104,7 @@ class OptionsMenu:
                             sys.exit()
                         else:
                             self.save_and_exit()
+                            return None
             elif event.type == pygame.JOYAXISMOTION:
                 if event.axis == 1 and abs(event.value) > 0.5:
                     if not self.waiting_for_input:
@@ -113,6 +119,10 @@ class OptionsMenu:
                             self.input_prompt = f"Press a button for {self.options[self.selected_option]['name']}"
                         elif self.options[self.selected_option]["type"] == "return":
                             self.save_and_exit()
+                            return None
+                        elif self.options[self.selected_option]["type"] == "return_to_menu":
+                            self.save_and_exit(return_to_menu=True)
+                            return "return_to_menu"
                         elif self.options[self.selected_option]["type"] == "quit":
                             # Supprimer le fichier de paramètres avant de quitter
                             if os.path.exists("settings.json"):
@@ -121,10 +131,12 @@ class OptionsMenu:
                             sys.exit()
                         else:
                             self.save_and_exit()
+                            return None
                 elif self.waiting_for_input:
                     self.options[self.selected_option]["value"] = event.button
                     self.waiting_for_input = False
                     self.update_game_buttons()  # Sauvegarder après changement
+        return None
 
     def adjust_option(self, direction):
         option = self.options[self.selected_option]
@@ -142,9 +154,10 @@ class OptionsMenu:
                 self.game.hadouken_button = option["value"]
         self.save_settings()  # Sauvegarder après mise à jour des boutons
 
-    def save_and_exit(self):
+    def save_and_exit(self, return_to_menu=False):
         self.update_game_buttons()
         self.running = False
+        return "return_to_menu" if return_to_menu else None
 
     def draw(self):
         self.screen.fill((0, 0, 0))
@@ -156,7 +169,7 @@ class OptionsMenu:
             if option["type"] == "button":
                 button_name = self.button_names.get(option["value"], "Unknown")
                 text = self.font.render(f"{option['name']}: {button_name}", True, color)
-            elif option["type"] in ["return", "quit"]:
+            elif option["type"] in ["return", "return_to_menu", "quit"]:
                 text = self.font.render(f"{option['name']}", True, color)
             else:
                 text = self.font.render(f"{option['name']}: {option['value']}", True, color)
@@ -171,6 +184,9 @@ class OptionsMenu:
     def run(self):
         self.running = True
         while self.running:
-            self.handle_events()
+            result = self.handle_events()
+            if result:
+                return result
             self.draw()
             self.clock.tick(60)
+        return None

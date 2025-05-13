@@ -115,10 +115,16 @@ while running:
             send_to_server(f"Bouton {selected_index} activé !")
 
             if button_list[selected_index] == PLAY_BUTTON:
-                game.run()
+                result = game.run()
+                if result == "return_to_menu":
+                    game = Game()  # Réinitialiser pour la page de démarrage
+                else:
+                    game = Game()  # Réinitialiser après la fin du jeu
             elif button_list[selected_index] == OPTIONS_BUTTON:
                 options_menu = OptionsMenu(screen, game)
-                options_menu.run()
+                result = options_menu.run()
+                if result == "return_to_menu":
+                    game = Game()  # Réinitialiser pour la page de démarrage
             elif button_list[selected_index] == QUIT_BUTTON:
                 # Supprimer le fichier de paramètres avant de quitter
                 if os.path.exists("settings.json"):
