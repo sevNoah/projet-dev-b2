@@ -70,6 +70,11 @@ class Game:
 
         self.speed = 300
 
+        # Touches configurées
+        self.kick_button = 1
+        self.punch_button = 2
+        self.hadouken_button = 3
+
         # Initialiser les manettes
         pygame.joystick.init()
         self.joysticks = []
@@ -95,18 +100,18 @@ class Game:
                 player["x"] = max(0, min(player["x"], 1280 - 150))
 
         # Attaques (seulement pour Ryu pour l'instant)
-            if idx == 0:  
-                if joystick.get_button(1) and not player["is_coupDePied"] and not player["is_punching"] and not player["is_cameamea"]:
+            if idx == 0:
+                if joystick.get_button(self.kick_button) and not player["is_coupDePied"] and not player["is_punching"] and not player["is_cameamea"]:
                     player["current_animation"] = self.coup_de_pied_animation
                     player["current_animation"].reset()
                     player["is_coupDePied"] = True
 
-                if joystick.get_button(2) and not player["is_punching"] and not player["is_coupDePied"] and not player["is_cameamea"]:
+                if joystick.get_button(self.punch_button) and not player["is_punching"] and not player["is_coupDePied"] and not player["is_cameamea"]:
                     player["current_animation"] = self.punch_animation
                     player["current_animation"].reset()
                     player["is_punching"] = True
 
-                if joystick.get_button(3) and not player["is_cameamea"] and not player["is_punching"] and not player["is_coupDePied"]:
+                if joystick.get_button(self.hadouken_button) and not player["is_cameamea"] and not player["is_punching"] and not player["is_coupDePied"]:
                     player["current_animation"] = self.cameamea_animation
                     player["current_animation"].reset()
                     player["is_cameamea"] = True
@@ -119,18 +124,16 @@ class Game:
                     })
                     player["is_cameamea"] = False
                     player["current_animation"] = self.idle_animation
-            
-            if idx == 1:  
-                if joystick.get_button(1) and not player["is_coupDePied"] and not player["is_punching"] :
+
+            if idx == 1:
+                if joystick.get_button(self.kick_button) and not player["is_coupDePied"] and not player["is_punching"]:
                     player["current_animation"] = self.coupDePied_ken_animation
                     player["current_animation"].reset()
                     player["is_coupDePied"] = True
-                if joystick.get_button(2) and not player["is_punching"] and not player["is_coupDePied"] :
+                if joystick.get_button(self.punch_button) and not player["is_punching"] and not player["is_coupDePied"]:
                     player["current_animation"] = self.coup_ken_animation
                     player["current_animation"].reset()
                     player["is_punching"] = True
-
-
 
     def update_player(self, player, delta_time):
         frame = player["current_animation"].animate(delta_time)
