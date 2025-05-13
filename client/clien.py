@@ -115,11 +115,20 @@ while running:
             send_to_server(f"Bouton {selected_index} activé !")
 
             if button_list[selected_index] == PLAY_BUTTON:
-                result = game.run()
-                if result == "return_to_menu":
-                    game = Game()  # Réinitialiser pour la page de démarrage
-                else:
-                    game = Game()  # Réinitialiser après la fin du jeu
+                while True:  # Boucle pour gérer "replay"
+                    result = game.run()
+                    if result == "replay":
+                        game = Game()  # Réinitialiser pour une nouvelle partie
+                        continue
+                    elif result == "quit":
+                        running = False  # Quitter le jeu
+                        break
+                    elif result == "return_to_menu":
+                        game = Game()  # Réinitialiser pour la page de démarrage
+                        break
+                    else:
+                        game = Game()  # Réinitialiser après la fin du jeu
+                        break
             elif button_list[selected_index] == OPTIONS_BUTTON:
                 options_menu = OptionsMenu(screen, game)
                 result = options_menu.run()

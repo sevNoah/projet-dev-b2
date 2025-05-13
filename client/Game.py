@@ -2,6 +2,7 @@ import pygame
 from SpriteSheet import SpriteSheet
 from Animation import Animation
 from option import OptionsMenu  # Importation du module option
+from gameOver import GameOverScreen  # Importation du module game over
 import json
 import os
 import time
@@ -31,6 +32,7 @@ class Game:
         self.running = True
         self.fireballs = []  # 🔥 boules de feu de Ryu
         self.fireballs_ken = []  # 🔥 boules de feu de Ken
+        self.winner = None  # Suivi du gagnant
 
         # Création des sprite sheets
         self.sprite_sheet = SpriteSheet(self.sprite_person1_img)
@@ -126,16 +128,22 @@ class Game:
                     player["current_animation"] = self.coup_de_pied_animation
                     player["current_animation"].reset()
                     player["is_coupDePied"] = True
+                    if not self.winner:  # Première attaque gagne
+                        self.winner = "Ryu"
 
                 if joystick.get_button(self.punch_button) and not player["is_punching"] and not player["is_coupDePied"] and not player["is_cameamea"]:
                     player["current_animation"] = self.punch_animation
                     player["current_animation"].reset()
                     player["is_punching"] = True
+                    if not self.winner:  # Première attaque gagne
+                        self.winner = "Ryu"
 
                 if joystick.get_button(self.hadouken_button) and not player["is_cameamea"] and not player["is_punching"] and not player["is_coupDePied"]:
                     player["current_animation"] = self.cameamea_animation
                     player["current_animation"].reset()
                     player["is_cameamea"] = True
+                    if not self.winner:  # Première attaque gagne
+                        self.winner = "Ryu"
 
                 if player["is_cameamea"] and player["current_animation"].current_frame >= player["current_animation"].animation_steps - 1:
                     self.fireballs.append({
@@ -151,10 +159,14 @@ class Game:
                     player["current_animation"] = self.coupDePied_ken_animation
                     player["current_animation"].reset()
                     player["is_coupDePied"] = True
+                    if not self.winner:  # Première attaque gagne
+                        self.winner = "Ken"
                 if joystick.get_button(self.punch_button) and not player["is_punching"] and not player["is_coupDePied"]:
                     player["current_animation"] = self.coup_ken_animation
                     player["current_animation"].reset()
                     player["is_punching"] = True
+                    if not self.winner:  # Première attaque gagne
+                        self.winner = "Ken"
 
     def update_player(self, player, delta_time):
         frame = player["current_animation"].animate(delta_time)
@@ -189,9 +201,17 @@ class Game:
                     result = options_menu.run()
                     if result == "return_to_menu":
                         self.running = False
-                        return "return_to_menu"  # Retourner explicitement pour la page de démarrage
+                        return "return_to_menu"  # Retourner au menu principal
 
             self.handle_joystick_input(delta_time)
+
+            # Vérifier si un gagnant est déterminé
+            if self.winner:
+                # Afficher la page Game Over
+                game_over_screen = GameOverScreen(self.screen, self.winner)
+                result = game_over_screen.run()
+                self.running = False
+                return result  # Retourner "replay" ou "quit"
 
             self.screen.blit(self.bg2, (0, 0))
 
