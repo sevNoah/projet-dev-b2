@@ -47,8 +47,8 @@ class Game:
         self.cameamea_animation = Animation(self.cameamea_sprite_sheet, 2, 0.15, 70, loop=False)
 
         self.idle_animation_ken = Animation(self.sprite_sheet_ken, 4, 0.15, 60, loop=True)
-        self.coup_ken_animation = Animation(self.sprite_sheet_coup, 3, 0.15, 83, loop = False)
-        self.coupDePied_ken_animation = Animation(self.sprite_sheet_coupDePied, 3, 0.15, 83, loop= False)
+        self.coup_ken_animation = Animation(self.sprite_sheet_coup, 3, 0.15, 83, loop=False)
+        self.coupDePied_ken_animation = Animation(self.sprite_sheet_coupDePied, 3, 0.15, 83, loop=False)
 
         # Joueurs
         self.player1 = {
@@ -86,22 +86,22 @@ class Game:
             self.joysticks.append(joystick)
 
     def handle_joystick_input(self, delta_time):
-        for idx, joystick in enumerate(self.joysticks):
+        for idx, joystick in enumerate(self.joysticks):  # Correction : joysicks -> joysticks
             if idx == 0:
-            # 🎮 Manette 0 -> contrôle Ryu
+                # 🎮 Manette 0 -> contrôle Ryu
                 player = self.player1
             else:
-            # 🎮 Manette 1 -> contrôle Ken
+                # 🎮 Manette 1 -> contrôle Ken
                 player = self.player2
 
-        # Déplacement
+            # Déplacement
             axis_x = joystick.get_axis(0)
             deadzone = 0.2
             if abs(axis_x) > deadzone:
                 player["x"] += axis_x * self.speed * delta_time
                 player["x"] = max(0, min(player["x"], 1280 - 150))
 
-        # Attaques (seulement pour Ryu pour l'instant)
+            # Attaques (seulement pour Ryu pour l'instant)
             if idx == 0:
                 if joystick.get_button(self.kick_button) and not player["is_coupDePied"] and not player["is_punching"] and not player["is_cameamea"]:
                     player["current_animation"] = self.coup_de_pied_animation
