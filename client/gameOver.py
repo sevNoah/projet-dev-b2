@@ -1,5 +1,6 @@
 import pygame
 import os
+import time
 from Button import Button
 
 class GameOverScreen:
@@ -28,10 +29,18 @@ class GameOverScreen:
                 print(f"❌ Image introuvable : {path}")
                 return pygame.Surface(default_size)
 
-        # Boutons (réutilisation des images de clien.py si disponibles)
-        self.replay_button = Button(image=load_image("../src/button/start_btn.png"), pos=(640, 400))
-        self.quit_button = Button(image=load_image("../src/button/button_quit.png"), pos=(640, 500))
-        self.button_list = [self.replay_button, self.quit_button]
+        # Créer une image pour "Menu" avec texte rendu
+        menu_surface = pygame.Surface((150, 60))  # Réduit légèrement la largeur pour le texte plus court
+        menu_surface.fill((50, 50, 50))  # Fond gris pour le bouton
+        menu_text = self.button_font.render("Menu", True, (255, 255, 255))
+        text_rect = menu_text.get_rect(center=(75, 30))
+        menu_surface.blit(menu_text, text_rect)
+
+        # Boutons
+        self.replay_button = Button(image=load_image("../src/button/start_btn.png"), pos=(640, 350))
+        self.return_to_menu_button = Button(image=menu_surface, pos=(640, 450))
+        self.quit_button = Button(image=load_image("../src/button/button_quit.png"), pos=(640, 550))
+        self.button_list = [self.replay_button, self.return_to_menu_button, self.quit_button]
         self.selected_index = 0
         self.joystick_moved = False
         self.last_move_time = 0
@@ -82,6 +91,9 @@ class GameOverScreen:
                     if self.button_list[self.selected_index] == self.replay_button:
                         self.running = False
                         return "replay"
+                    elif self.button_list[self.selected_index] == self.return_to_menu_button:
+                        self.running = False
+                        return "return_to_menu"
                     elif self.button_list[self.selected_index] == self.quit_button:
                         # Supprimer settings.json avant de quitter
                         if os.path.exists("settings.json"):
@@ -102,4 +114,4 @@ class GameOverScreen:
             pygame.display.flip()
             self.clock.tick(60)
 
-        return "quit"  # Par défaut, quitter si la boucle se termine 
+        return "quit"  # Par défaut, quitter si la boucle se termine
