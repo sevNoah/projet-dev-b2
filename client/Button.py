@@ -1,3 +1,5 @@
+import pygame
+
 class Button:
     def __init__(self, image, pos, text_input=None, font=None, base_color=None, hovering_color=None):
         self.image = image
@@ -28,7 +30,7 @@ class Button:
             screen.blit(self.image, self.rect)
         if self.text is not None:
             screen.blit(self.text, self.text_rect)
-
+    
     def changeColor(self, position):
         if self.text is not None:
             if self.rect.collidepoint(position):

@@ -1,6 +1,7 @@
 import pygame
 from SpriteSheet import SpriteSheet
 from Animation import Animation
+from gameOver import GameOverScreen  
 
 class Game:
     def __init__(self):
@@ -56,7 +57,7 @@ class Game:
             "health": 500,
             "last_attack_time": 0,
             "attack_cooldown": 650,
-            "cameamea_cooldown": 4500,  # en millisecondes (ici 0.5 seconde)
+            "cameamea_cooldown": 1500,  
             "current_animation": self.idle_animation,
             "is_punching": False,
             "is_cameamea": False,
@@ -68,14 +69,14 @@ class Game:
             "y": 300,
             "health": 500,
             "last_attack_time": 0,
-            "attack_cooldown": 900,
+            "attack_cooldown": 2800,
             "current_animation": self.idle_animation_ken,
             "is_punching": False,
             "is_cameamea": False,
             "is_coupDePied": False
         }
 
-        self.speed = 300
+        self.speed = 250
 
         # Initialiser les manettes
         pygame.joystick.init()
@@ -204,7 +205,7 @@ class Game:
 
             # Boules de feu
             for fireball in self.fireballs + self.fireballs_ken:
-                fireball["x"] += 8
+                fireball["x"] += 50
                 frame = fireball["animation"].animate(delta_time)
                 if frame:
                     self.screen.blit(frame, (fireball["x"], fireball["y"]))
@@ -222,8 +223,8 @@ class Game:
             player1_hitbox = pygame.Rect(self.player1["x"] + 30, self.player1["y"], 90, 230)
             player2_hitbox = pygame.Rect(self.player2["x"] + 30, self.player2["y"] + 70, 100, 230)
             # Dessiner les hitboxs pour le debug
-            pygame.draw.rect(self.screen, (255, 0, 0), player1_hitbox, 2)
-            pygame.draw.rect(self.screen, (0, 0, 255), player2_hitbox, 2)
+            #pygame.draw.rect(self.screen, (255, 0, 0), player1_hitbox, 2)
+            #pygame.draw.rect(self.screen, (0, 0, 255), player2_hitbox, 2)
 
 
             # Coup de poing Ryu → Ken
@@ -232,22 +233,22 @@ class Game:
                 if punch_hitbox.colliderect(player2_hitbox):
                     self.player2["health"] -= 7
                     self.player1["is_punching"] = False
-                pygame.draw.rect(self.screen, (255, 255, 0), punch_hitbox, 2)  # debug : jaune
+                #pygame.draw.rect(self.screen, (255, 255, 0), punch_hitbox, 2)  # debug 
 
             if self.player1["is_coupDePied"]:
                 punch_hitbox = pygame.Rect(self.player1["x"] + 150, self.player1["y"] + 40, 40, 20)
                 if punch_hitbox.colliderect(player2_hitbox):
                     self.player2["health"] -= 5
                     self.player1["is_coupDePied"] = False
-                pygame.draw.rect(self.screen, (255, 255, 0), punch_hitbox, 2)  # debug : jaune.
+                #pygame.draw.rect(self.screen, (255, 255, 0), punch_hitbox, 2)  # debug 
             
             # Collision des boules de feu de Ryu sur Ken
             for fireball in self.fireballs:
                 fireball_hitbox = pygame.Rect(fireball["x"], fireball["y"], 40, 20)
-                pygame.draw.rect(self.screen, (255, 255, 0), fireball_hitbox, 2)  # debug : jaune
+                #pygame.draw.rect(self.screen, (255, 255, 0), fireball_hitbox, 2)  # debug 
 
                 if fireball_hitbox.colliderect(player2_hitbox):
-                    self.player2["health"] -= 15
+                    self.player2["health"] -= 100
                     self.fireballs.remove(fireball)
 
 
@@ -257,24 +258,29 @@ class Game:
                 if punch_hitbox_ken.colliderect(player1_hitbox):
                     self.player1["health"] -= 7
                     self.player2["is_punching"] = False
-                pygame.draw.rect(self.screen, (255, 255, 0), punch_hitbox_ken, 2)  # debug : jaune
+                #pygame.draw.rect(self.screen, (255, 255, 0), punch_hitbox_ken, 2)  # debug 
 
             if self.player2["is_coupDePied"]:
                 punch_hitbox_ken = pygame.Rect(self.player2["x"] - 40, self.player2["y"] + 40, 40, 20)
                 if punch_hitbox_ken.colliderect(player1_hitbox):
                     self.player1["health"] -= 5
                     self.player2["is_coupDePied"] = False
-                pygame.draw.rect(self.screen, (255, 255, 0), punch_hitbox_ken, 2)  # debug : jaune
+                #pygame.draw.rect(self.screen, (255, 255, 0), punch_hitbox_ken, 2)  # debug 
 
 
 
             # Fin du combat si un joueur a 0 PV
             if self.player1["health"] <= 0:
-                print("💥 Ken gagne !")
+                self.winner = "ken"
+                game_over_screen = GameOverScreen(self.screen, self.winner)
+                result = game_over_screen.run()
                 self.running = False
             elif self.player2["health"] <= 0:
-                print("💥 Ryu gagne !")
+                self.winner = "Ryu"
+                game_over_screen = GameOverScreen(self.screen, self.winner)
+                result = game_over_screen.run()
                 self.running = False
+                print("💥 Ryu gagne !")
 
             pygame.display.flip()
 

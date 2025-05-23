@@ -2,7 +2,9 @@ import socket
 import pygame
 from Button import Button
 from Game import Game
+from option import OptionsMenu  # Importation du module option
 import time
+import os
 
 # --- Configuration du serveur ---
 HOST = "127.0.0.1"
@@ -10,7 +12,7 @@ PORT = 12346
 
 # --- Initialisation du socket ---
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((HOST, PORT))  
+client.connect((HOST, PORT))
 print("✅ Connecté au serveur !")
 
 # --- Initialisation de Pygame ---
@@ -30,7 +32,7 @@ def load_image(path, default_size=(100, 50)):
         return pygame.Surface(default_size)
 
 bg1 = load_image("../src/background/street-fighter-japanese-signs-1280x720.png")
-current_bg = bg1  
+current_bg = bg1
 
 # --- Vérification et initialisation de la manette ---
 if pygame.joystick.get_count() == 0:
@@ -45,7 +47,7 @@ print(f"🎮 Manette détectée : {joystick.get_name()}")
 # --- Fonction pour envoyer un message au serveur ---
 def send_to_server(message):
     try:
-        client.send(message.encode())  
+        client.send(message.encode())
     except Exception as e:
         print(f"❌ Erreur d'envoi : {e}")
 
@@ -53,7 +55,7 @@ def send_to_server(message):
 def load_button(image_path, pos):
     return Button(image=load_image(image_path), pos=pos)
 
-TITTLE = load_button("../src/button/titre.png", (640, 150   ))
+TITTLE = load_button("../src/button/titre.png", (640, 150))
 PLAY_BUTTON = load_button("../src/button/start_btn.png", (640, 300))
 OPTIONS_BUTTON = load_button("../src/button/button_options.png", (640, 450))
 QUIT_BUTTON = load_button("../src/button/button_quit.png", (640, 600))
@@ -64,7 +66,7 @@ joystick_moved = False
 
 # --- Délai entre les mouvements ---
 last_move_time = time.time()
-move_delay = 0.5  
+move_delay = 0.5
 
 # --- Optimisation de l'animation des boutons ---
 resized_images = {}
@@ -88,7 +90,6 @@ def animate_buttons():
 # --- Boucle principale ---
 while running:
     screen.blit(current_bg, (0, 0))
-      
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -102,24 +103,38 @@ while running:
                 if current_time - last_move_time > move_delay:
                     selected_index = (selected_index + 1) % len(button_list) if event.value > 0 else (selected_index - 1) % len(button_list)
                     print(f"🎮 Bouton sélectionné : {selected_index}")
-                    last_move_time = current_time  
-                    joystick_moved = True  
+                    last_move_time = current_time
+                    joystick_moved = True
 
             if abs(event.value) < 0.1:
-                joystick_moved = False  
-
-
+                joystick_moved = False
 
         # --- Sélection avec le bouton X ---
-        if event.type == pygame.JOYBUTTONDOWN and event.button == 0:  
-            print(f"✅ Bouton {selected_index} activé !")
-            send_to_server(f"Bouton {selected_index} activé !")
-
+        if event.type == pygame.JOYBUTTONDOWN and event.button == 0:
             if button_list[selected_index] == PLAY_BUTTON:
-                game.run()
+                while True:  # Boucle pour gérer "replay"
+                    result = game.run()
+                    if result == "replay":
+                        game = Game()  # Réinitialiser pour une nouvelle partie
+                        continue
+                    elif result == "quit":
+                        running = False  # Quitter le jeu
+                        break
+                    elif result == "return_to_menu":
+                        game = Game()  # Réinitialiser pour la page de démarrage
+                        break
+                    else:
+                        game = Game()  # Réinitialiser après la fin du jeu
+                        break
             elif button_list[selected_index] == OPTIONS_BUTTON:
-                print("⚙️ Options ouvertes !")
+                options_menu = OptionsMenu(screen, game)
+                result = options_menu.run()
+                if result == "return_to_menu":
+                    game = Game()  # Réinitialiser pour la page de démarrage
             elif button_list[selected_index] == QUIT_BUTTON:
+                # Supprimer le fichier de paramètres avant de quitter
+                if os.path.exists("settings.json"):
+                    os.remove("settings.json")
                 running = False
 
     # --- Animation des boutons ---
