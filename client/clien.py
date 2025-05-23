@@ -1,8 +1,9 @@
+# client.py
 import socket
 import pygame
 from Button import Button
 from Game import Game
-from option import OptionsMenu  # Importation du module option
+from option import OptionsMenu
 import time
 import os
 
@@ -61,6 +62,11 @@ OPTIONS_BUTTON = load_button("../src/button/button_options.png", (640, 450))
 QUIT_BUTTON = load_button("../src/button/button_quit.png", (640, 600))
 
 button_list = [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]
+button_names = {
+    PLAY_BUTTON: "Play",
+    OPTIONS_BUTTON: "Options",
+    QUIT_BUTTON: "Quit"
+}
 selected_index = 0
 joystick_moved = False
 
@@ -102,7 +108,7 @@ while running:
                 current_time = time.time()
                 if current_time - last_move_time > move_delay:
                     selected_index = (selected_index + 1) % len(button_list) if event.value > 0 else (selected_index - 1) % len(button_list)
-                    print(f"🎮 Bouton sélectionné : {selected_index}")
+                    print(f"🎮 Bouton sélectionné : {button_names[button_list[selected_index]]}")
                     last_move_time = current_time
                     joystick_moved = True
 
@@ -111,28 +117,35 @@ while running:
 
         # --- Sélection avec le bouton X ---
         if event.type == pygame.JOYBUTTONDOWN and event.button == 0:
+            print(f"🎮 Bouton Cross pressé, sélection : {button_names[button_list[selected_index]]}")
             if button_list[selected_index] == PLAY_BUTTON:
-                while True:  # Boucle pour gérer "replay"
+                print("🎮 Lancement du jeu")
+                while True:
                     result = game.run()
                     if result == "replay":
-                        game = Game()  # Réinitialiser pour une nouvelle partie
+                        game = Game()
                         continue
                     elif result == "quit":
-                        running = False  # Quitter le jeu
+                        running = False
                         break
                     elif result == "return_to_menu":
-                        game = Game()  # Réinitialiser pour la page de démarrage
+                        game = Game()
                         break
                     else:
-                        game = Game()  # Réinitialiser après la fin du jeu
+                        game = Game()
                         break
             elif button_list[selected_index] == OPTIONS_BUTTON:
+                print("🎮 Ouverture du menu Options")
                 options_menu = OptionsMenu(screen, game)
                 result = options_menu.run()
                 if result == "return_to_menu":
-                    game = Game()  # Réinitialiser pour la page de démarrage
+                    print("🎮 Retour au menu principal")
+                    game = Game()
+                    pygame.event.clear()
+                elif result == "quit":
+                    running = False
             elif button_list[selected_index] == QUIT_BUTTON:
-                # Supprimer le fichier de paramètres avant de quitter
+                print("🎮 Quitter le jeu")
                 if os.path.exists("settings.json"):
                     os.remove("settings.json")
                 running = False
